@@ -1,6 +1,8 @@
 package com.security.springsecurity.dtos;
 
-import com.security.springsecurity.model.Roles;
+
+import com.security.springsecurity.model.Role;
+import com.security.springsecurity.model.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +13,13 @@ import java.util.Set;
 @Setter
 public class UserDto {
     private String email;
-    private Set<Roles> roles = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
 
+    public static UserDto from(User user) {
+        UserDto userDto = new UserDto();
+        userDto.setEmail(user.getEmail());
+        userDto.setRoles(user.getRoles());
+
+        return userDto;
+    }
 }

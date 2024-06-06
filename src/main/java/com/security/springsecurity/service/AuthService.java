@@ -1,37 +1,39 @@
 package com.security.springsecurity.service;
 
+import com.security.springsecurity.dao.SessionRepository;
 import com.security.springsecurity.dao.UserRepo;
 import com.security.springsecurity.dtos.UserDto;
-import com.security.springsecurity.model.ClientUser;
-import com.security.springsecurity.model.Role;
-import com.security.springsecurity.model.Roles;
+import com.security.springsecurity.model.Session;
+import com.security.springsecurity.model.SessionStatus;
+import com.security.springsecurity.model.User;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMapAdapter;
-import org.springframework.web.bind.support.SessionStatus;
 
 import java.util.*;
 
 @Service
 public class AuthService {
     private UserRepo userRepository;
+    private SessionRepository sessionRepository;
 
 
-    public AuthService(UserRepo userRepository) {
+    public AuthService(UserRepo userRepository, SessionRepository sessionRepository) {
         this.userRepository = userRepository;
+        this.sessionRepository = sessionRepository;
     }
 
     public ResponseEntity<UserDto> login(String username, String password) {
-        Optional<ClientUser> userOptional = userRepository.findClientUserByUserName(username);
+        Optional<User> userOptional = userRepository.findByEmail(username);
 
         if (userOptional.isEmpty()) {
             return null;
         }
 
-        ClientUser user = userOptional.get();
+        User user = userOptional.get();
 
         if (!user.getPassword().equals(password)) {
             return null;
@@ -39,21 +41,13 @@ public class AuthService {
 
         String token = RandomStringUtils.randomAlphanumeric(30);
 
-      /*  Session session = new Session();
+        Session session = new Session();
         session.setSessionStatus(SessionStatus.ACTIVE);
         session.setToken(token);
         session.setUser(user);
-        sessionRepository.save(session);*/
+        sessionRepository.save(session);
 
         UserDto userDto = new UserDto();
-        Set<Roles> roles = new HashSet<>();
-        user.getRoles().forEach(x->{
-            Roles role= new Roles();
-            role.setRole(x.getName());
-            roles.add(role);
-        });
-        userDto.setRoles(roles);
-
 
 //        Map<String, String> headers = new HashMap<>();
 //        headers.put(HttpHeaders.SET_COOKIE, token);
@@ -68,6 +62,30 @@ public class AuthService {
 
         return response;
     }
+    public UserDto signUp(String email, String password) {
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(password);
 
+        User savedUser = userRepository.save(user);
+
+        return UserDto.from(savedUser);
+    }
+
+    public ResponseEntity<Void> logout(String token, Long userId) {
+        Optional<Session> sessionOptional = sessionRepository.findByTokenAndUser_Id(token, userId);
+
+        if (sessionOptional.isEmpty()) {
+            return null;
+        }
+
+        Session session = sessionOptional.get();
+
+        session.setSessionStatus(SessionStatus.ENDED);
+
+        sessionRepository.save(session);
+
+        return ResponseEntity.ok().build();
+    }
 
 }
