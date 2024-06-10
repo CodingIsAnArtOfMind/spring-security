@@ -1,8 +1,6 @@
 package com.security.springsecurity.controller;
-import com.security.springsecurity.dtos.LoginRequestDto;
-import com.security.springsecurity.dtos.LogoutRequestDto;
-import com.security.springsecurity.dtos.SignUpRequestDto;
-import com.security.springsecurity.dtos.UserDto;
+import com.security.springsecurity.dtos.*;
+import com.security.springsecurity.model.SessionStatus;
 import com.security.springsecurity.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,13 +28,11 @@ public class AuthController {
     public ResponseEntity<Void> logout(@RequestBody LogoutRequestDto request) {
         return authService.logout(request.getToken(), request.getUserId());
     }
-
-    /*@
     @PostMapping("/validate")
     public ResponseEntity<SessionStatus> validateToken(ValidateTokenRequestDto request) {
         SessionStatus sessionStatus = authService.validate(request.getToken(), request.getUserId());
 
         return new ResponseEntity<>(sessionStatus, HttpStatus.OK);
-    }*/
+    }
 
 }
